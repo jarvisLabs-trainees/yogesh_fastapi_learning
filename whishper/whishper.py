@@ -1,4 +1,9 @@
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import JSONResponse
+from typing import List
 import requests
+
+app = FastAPI()
 
 def query(filename):
     with open(filename, "rb") as f:
@@ -11,5 +16,10 @@ def query(filename):
     
     return response.json()
 
-output = query("output.mp3")
-print(output)
+@app.post("/predict")
+async def predict(file: UploadFile = File(...)):
+    try:
+        output = query(file.filename)
+        return JSONResponse(content=output)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
